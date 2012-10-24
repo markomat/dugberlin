@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Display suite install file.
+ * Display Suite install file.
  */
 
 /**
@@ -19,7 +19,7 @@ function ds_install() {
  * Implements hook_uninstall().
  */
 function ds_uninstall() {
-  variable_del('ds_styles_regions');
+  variable_del('ds_classes_regions');
 }
 
 /**
@@ -67,7 +67,7 @@ function ds_disable() {
 function ds_schema() {
 
   $schema['ds_field_settings'] = array(
-    'description' => 'The table that holds display suite field settings per display.',
+    'description' => 'The table that holds Display Suite field settings per display.',
 
     // CTools export definitions.
     'export' => array(
@@ -113,7 +113,7 @@ function ds_schema() {
         'default' => '',
       ),
       'settings' => array(
-        'description' => 'The display suite field settings for this layout.',
+        'description' => 'The Display Suite field settings for this layout.',
         'type' => 'blob',
         'not null' => FALSE,
         'size' => 'big',
@@ -286,6 +286,13 @@ function ds_schema() {
         'size' => 'big',
         'serialize' => TRUE,
       ),
+      'ui_limit' => array(
+        'description' => 'The UI limit for this field.',
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+      ),
       'properties' => array(
         'description' => 'The properties for this field.',
         'type' => 'blob',
@@ -301,33 +308,11 @@ function ds_schema() {
 }
 
 /**
- * Update the weight of Display Suite.
+ * Add the ui_limit table to the fields table.
  */
-function ds_update_7001() {
-  db_update('system')
-    ->fields(array('weight' => 1))
-    ->condition('name', 'ds')
-    ->execute();
-}
-
-/**
- * Updates the ds_layout_settings table.
- */
-function ds_update_7002() {
+function ds_update_7201() {
   $schema = ds_schema();
-  db_change_field('ds_layout_settings', 'layout', 'layout', $schema['ds_layout_settings']['fields']['layout']);
-}
-
-/**
- * Trigger an update to clear the cache.
- */
-function ds_update_7003() {}
-
-/**
- * Updates the ds_layout_settings table.
- */
-function ds_update_7004() {
-  $schema = ds_schema();
-  db_change_field('ds_layout_settings', 'bundle', 'bundle', $schema['ds_layout_settings']['fields']['bundle']);
-  db_change_field('ds_field_settings', 'bundle', 'bundle', $schema['ds_field_settings']['fields']['bundle']);
+  if (!db_field_exists('ds_fields', 'ui_limit')) {
+    db_add_field('ds_fields', 'ui_limit', $schema['ds_fields']['fields']['ui_limit']);
+  }
 }

@@ -297,25 +297,20 @@ function media_admin_config_browser($form, &$form_state) {
     '#maxlength' => 255,
   );
 
-  // Additional configuration if the WYSIWYG module is enabled.
-  $form['wysiwyg'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('WYSIWYG configuration'),
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-    '#access' => module_exists('wysiwyg'),
-  );
-  $plugins = media_get_browser_plugin_info();
-  $form['wysiwyg'][media_variable_name('wysiwyg_browser_plugins')] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('Enabled browser plugins'),
-    '#options' => array(),
-    '#required' => FALSE,
-    '#default_value' => media_variable_get('wysiwyg_browser_plugins'),
-    '#description' => t('If no plugins are selected, they will all be available.'),
-  );
-  foreach ($plugins as $key => $plugin) {
-    $form['wysiwyg'][media_variable_name('wysiwyg_browser_plugins')]['#options'][$key] = !empty($plugin['title']) ? $plugin['title'] : $key;
+  // If the WYSIWYG module is enabled, add additional configs.
+  if (module_exists('wysiwyg')) {
+    $plugins = media_get_browser_plugin_info();
+    $form[media_variable_name('wysiwyg_browser_plugins')] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Enabled browser plugins in WYSIWYG'),
+      '#options' => array(),
+      '#required' => FALSE,
+      '#default_value' => media_variable_get('wysiwyg_browser_plugins'),
+      '#description' => t('If no plugins are selected, they will all be available.'),
+    );
+    foreach ($plugins as $key => $plugin) {
+      $form[media_variable_name('wysiwyg_browser_plugins')]['#options'][$key] = !empty($plugin['title']) ? $plugin['title'] : $key;
+    }
   }
 
   $form['#submit'][] = 'media_admin_config_browser_pre_submit';

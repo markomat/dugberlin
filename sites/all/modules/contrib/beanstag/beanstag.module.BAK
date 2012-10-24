@@ -1,0 +1,364 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * This is the .module file of BeansTag.
+ */
+
+function beanstag_permission() {
+  return array(
+    'administer beanstag' => array(
+      'title' => t('Administer beanstag'),
+      'description' => t('Allow users to administer beanstags.'),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function beanstag_menu() {
+
+  $items['admin/structure/beanstag'] = array(
+    'title' => 'Manage BeansTag',
+    'description' => 'Edit page titles and meta tags.',
+    'page callback' => 'beanstag_list',
+    'access arguments' => array('administer beanstag'),
+    'file' => 'beanstag.admin.inc',
+  );
+
+  $items['admin/structure/beanstag/add'] = array(
+    'title' => 'Add new BeansTag',
+    'description' => 'Add page titles and meta tags.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('beanstag_admin_form'),
+    'access arguments' => array('administer beanstag'),
+    'type' => MENU_LOCAL_ACTION,
+    'file' => 'beanstag.admin.inc',
+  );
+
+  $items['admin/structure/beanstag/edit/%beanstag'] = array(
+    'title' => 'Edit BeansTag',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('beanstag_admin_form', 4),
+    'access arguments' => array('administer beanstag'),
+    'file' => 'beanstag.admin.inc',
+  );
+
+  $items['admin/structure/beanstag/delete/%beanstag'] = array(
+    'title' => 'Delete BeansTag',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('beanstag_admin_delete_confirm', 4),
+    'access arguments' => array('administer beanstag'),
+    'file' => 'beanstag.admin.inc',
+  );
+
+  $items['admin/structure/beanstag/delete/selected'] = array(
+    'title' => 'Delete BeansTag',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('beanstag_bulk_delete_form_confirm', 4),
+    'access arguments' => array('administer beanstag'),
+    'file' => 'beanstag.admin.inc',
+  );
+
+  $items['admin/structure/beanstag/list'] = array(
+    'title' => 'List',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+    'access arguments' => array('administer beanstag'),
+  );
+
+  $items['admin/beanstag'] = array(
+    'title' => 'Update BeansTag',
+    'description' => 'Update page titles and meta tags.',
+    'page callback' => 'beanstag_load_admin_form',
+    'page arguments' => array(2),
+    'access arguments' => array('administer beanstag'),
+    'file' => 'beanstag.admin.inc',
+  );
+
+  $items['admin/config/search/beanstag'] = array(
+    'title' => 'Beanstag Settings',
+    'description' => 'The Beanstag settings page.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('beanstag_admin'),
+    'access arguments' => array('administer beanstag'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+ * Form builder for beanstag_admin form.
+ *
+ * @see system_settings_form()
+ */
+function beanstag_admin() {
+  $form = array();
+
+  $form['beanstag_override'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Override',
+    '#default_value' => variable_get('beanstag_override', 0),
+    '#description' => 'Override existing meta tags.',
+    '#required' => FALSE,
+  );
+
+  $form['beanstag_enable_meta_robots'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Override',
+    '#default_value' => variable_get('beanstag_enable_meta_robots', 0),
+    '#description' => 'Enable meta robots in BeansTag.',
+    '#required' => FALSE,
+  );
+
+  $form['beanstag_enable_meta_canonical'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Override',
+    '#default_value' => variable_get('beanstag_enable_meta_canonical', 0),
+    '#description' => 'Enable meta canonical in BeansTag.',
+    '#required' => FALSE,
+  );
+
+  return system_settings_form($form);
+}
+
+/**
+ * Add meta tags
+ */
+function beanstag_html_head_alter(&$head_elements) {
+
+  $new_header = TRUE;
+
+  // If override settings is not checked
+  if (variable_get('beanstag_override', 0) == 0) {
+    // Check if meta keywords already exist. if yes, then we will not add our meta keywords.
+    foreach ($head_elements as $key => $element) {
+      if (isset($element['#attributes']['name'])) {
+        if ($element['#attributes']['name'] == 'keywords') {
+          $new_header = FALSE;
+          break;
+        }
+      }
+    }
+  }
+
+  // Remove default canonical link, if beanstag is configured to override existing meta tags
+  /*
+  if (variable_get('beanstag_override', 0) == 1){
+    foreach ($head_elements as $key => $element) {
+      if (isset($element['#attributes']['rel']) && $element['#attributes']['rel'] == 'canonical') {
+       unset($head_elements[$key]);
+      }
+    }
+  }
+  */
+
+
+  // Add meta tag only when there is no existing meta keywords
+  if ($new_header) {
+    $curr_uri = request_path() ? request_path() : '<front>';
+    if (_beanstag_exists($curr_uri)) {
+      // beanstag exists as exact path
+      $beanstag = _beanstag_getbeanstag_by_path_alias($curr_uri);
+			_beanstag_set_meta($beanstag, $head_elements);
+    } else if ($beanstag_id = _beanstag_wild_check($curr_uri)) {
+      // beanstag exists as wild path
+      $beanstag = _beanstag_get_beanstag_by_id($beanstag_id);
+      _beanstag_set_meta($beanstag, $head_elements);
+    }
+  }
+}
+
+/**
+ * Implementation of process_html
+ * Set page title
+ */
+function beanstag_process_html(&$vars) {
+  $beanstag = _beanstag_getbeanstag_by_path_alias(request_path() ? request_path() : '<front>');
+  if (!empty($beanstag)) {
+    // beanstag exists as exact path
+		_beanstag_set_title($beanstag, $vars);
+  } else if ($beanstag_id = _beanstag_wild_check(request_path())) {
+    // beanstag exists as wild path
+    $beanstag = _beanstag_get_beanstag_by_id($beanstag_id);
+    _beanstag_set_title($beanstag, $vars);
+  }
+}
+
+/**
+ * Auto-load function for menu path argument %beanstag
+ */
+function beanstag_load($conditions) {
+  if (is_numeric($conditions)) {
+    $conditions = array('id' => $conditions);
+  }
+  elseif (is_string($conditions)) {
+    $conditions = array('path_alias' => $conditions);
+  }
+  elseif (!is_array($conditions)) {
+    return FALSE;
+  }
+  $select = db_select('beanstag');
+  foreach ($conditions as $field => $value) {
+    $select->condition($field, $value);
+  }
+  return $select
+    ->fields('beanstag')
+    ->execute()
+    ->fetchAssoc();
+}
+
+/**
+ * Menu callback function to provide %beanstag_request_path argument
+ * Saves the current path to PHP session with a random string as the session key
+ */
+function beanstag_request_path_to_arg($arg) {
+  if (!isset($_SESSION['prev_path']) || !is_array($_SESSION['prev_path'])) {
+    $_SESSION['prev_path'] = array();
+  }
+  $rand_str = substr( str_shuffle( 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' ) , 0 , 8 );
+  $_SESSION['prev_path'][$rand_str] = request_path() ? request_path() : '<front>';
+  return $rand_str;
+}
+
+/**
+ * Menu callback function to return the %beanstag_request_path argument provided by beanstag_request_path_to_arg
+ * @see beanstag_request_path_to_arg($arg)
+ */
+function beanstag_request_path_load($arg) {
+  return $arg;
+}
+
+ /**
+ * Implementation of hook_exit()
+ * store current request page to user session
+ */
+function beanstag_exit($destination = NULL) {
+  module_load_include('module', 'user', 'user');
+  if (user_access('administer beanstag') && (!isset($_REQUEST['render']) || $_REQUEST['render'] != 'overlay')) {
+    $_SESSION['last_request_page'] = request_path() ? request_path() : '<front>';
+  }
+}
+
+/**
+ * Private functions
+ */
+function _beanstag_exists($path_alias, $path_id = NULL) {
+  $query = 'SELECT 1 FROM {beanstag} b WHERE b.path_alias = :path_alias';
+  $query_params = array(':path_alias' => $path_alias);
+  if (is_numeric($path_id)) {
+    $query .= ' AND b.id <> :path_id';
+    $query_params[':path_id'] = $path_id;
+  }
+  $result = db_query($query, $query_params);
+
+  if ($result->rowCount() == 0) {
+    return FALSE;
+  }
+  else {
+    return TRUE;
+  }
+}
+
+function _beanstag_wild_check($path_alias) {
+  $query = 'SELECT * FROM {beanstag} b WHERE b.path_alias LIKE :path_alias';
+  $result = db_query($query, array(':path_alias' => '%/*'));
+
+  $matched_chars = 0;
+  $matched_beanstag_id = NULL;
+
+  foreach ($result as $record) {
+    $stored_path_alias = substr($record->path_alias, 0, -1);
+    if (strpos($path_alias, $stored_path_alias) !== FALSE) {
+      $new_matched_chars = similar_text($path_alias, $stored_path_alias);
+      if ($new_matched_chars > $matched_chars) {
+        $matched_chars = $new_matched_chars;
+        $matched_beanstag_id = $record->id;
+      }
+    }
+  }
+
+  return $matched_beanstag_id;
+}
+
+function _beanstag_set_meta($beanstag, &$head_elements) {
+  $data = array();
+  if (arg(0) == 'node') {
+    $data['node'] = node_load(arg(1));
+  } else if(arg(0) == 'term') {
+    $data['term'] = term_load(arg(1));
+  }
+
+  // Insert meta description if it exists
+  if ($beanstag->meta_description) {
+    $head_elements['beanstag_description'] = array(
+      '#type' => 'html_tag',
+      '#tag' => 'meta',
+      '#attributes' => array('name' => 'description', 'content' => check_plain(token_replace($beanstag->meta_description, $data))),
+    );
+  }
+
+  // Insert meta keywords if it exists
+  if ($beanstag->meta_keywords) {
+    $head_elements['beanstag_keywords'] = array(
+      '#type' => 'html_tag',
+      '#tag' => 'meta',
+      '#attributes' => array('name' => 'keywords', 'content' => check_plain(token_replace($beanstag->meta_keywords, $data))),
+    );
+  }
+
+  // Insert meta robots if it exists and beanstag_enable_meta_robots is enabled
+  if (variable_get('beanstag_enable_meta_robots', 0) == 1) {
+    if ($beanstag->meta_robots) {
+      $head_elements['beanstag_robots'] = array(
+        '#type' => 'html_tag',
+        '#tag' => 'meta',
+        '#attributes' => array('name' => 'robots', 'content' => check_plain(token_replace($beanstag->meta_robots, $data))),
+      );
+    }
+  }
+
+  // Insert meta canonical if it exists and beanstag_enable_meta_canonical is enabled
+  if (variable_get('beanstag_enable_meta_canonical', 0) == 1) {
+    if ($beanstag->meta_canonical) {
+      $head_elements['beanstag_canonical'] = array(
+        '#type' => 'html_tag',
+        '#tag' => 'link',
+        '#attributes' => array('rel' => 'canonical', 'href' => check_plain(token_replace($beanstag->meta_canonical, $data))),
+      );
+    }
+  }
+}
+
+function _beanstag_set_title($beanstag, &$vars) {
+  $data = array();
+  if (arg(0) == 'node') {
+    $data['node'] = node_load(arg(1));
+  } else if(arg(0) == 'term') {
+    $data['term'] = term_load(arg(1));
+  }
+  $vars['head_title'] = check_plain(token_replace($beanstag->page_title, $data)) . ' | ' . variable_get('site_name');
+}
+
+function _beanstag_get_beanstag_by_id($id) {
+  $result = db_query('SELECT * FROM {beanstag} b WHERE b.id = :id', array(':id' => $id));
+  return $result->fetchObject();
+}
+
+function _beanstag_get_id_by_path_alias($path_alias) {
+  $result = db_query('SELECT b.id FROM {beanstag} b WHERE b.path_alias = :path_alias', array(':path_alias' => $path_alias));
+  return $result->fetchObject()->id;
+}
+
+function _beanstag_getbeanstag_by_path_alias($path_alias) {
+  $result = db_select('beanstag')
+    ->fields('beanstag')
+    ->condition('path_alias', $path_alias)
+    ->range(0, 1)
+    ->execute();
+
+  return $result->fetchObject();
+}

@@ -128,7 +128,7 @@ function media_variable_default($name = NULL) {
       // Name of the theme to use in media popup dialogs, defaults to admin_theme
       'dialog_theme' => '',
       // @TODO: Make a configuration form with this.
-      'file_extensions' => FILE_DEFAULT_ALLOWED_EXTENSIONS . ' mp3 mov mp4 m4a m4v mpeg avi ogg oga ogv wmv ico',
+      'file_extensions' => FILE_DEFAULT_ALLOWED_EXTENSIONS . ' mp3 mov m4v mpeg avi ogg oga ogv wmv ico',
       'max_filesize' => '',
       'debug' => FALSE,
 
@@ -136,6 +136,10 @@ function media_variable_default($name = NULL) {
 
       // Used in media.xml.inc: how long to cache retrieved remote data.
       'xml_cache_expire' => 3600,
+
+      // Browser defaults in media.browser.inc.
+      'browser_viewtype_default' => 'thumbnails',
+      'browser_pager_limit' => 40,
 
       'import_batch_size' => 20,
       'fromurl_supported_schemes' => array('http', 'https', 'ftp', 'smb', 'ftps'),
@@ -148,8 +152,6 @@ function media_variable_default($name = NULL) {
       'field_select_media_text' => NULL,
       'field_remove_media_text' => NULL,
       'browser_library_empty_message' => NULL,
-      'browser_pager_limit' => NULL,
-      'browser_viewtype_default' => NULL,
     );
   }
 

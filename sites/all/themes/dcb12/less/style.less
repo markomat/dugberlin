@@ -8,8 +8,11 @@
 @fontsize-XXL:  3em;
 
 @textColor:     #444;
-
 @linkColor:     #0D7DC1;
+
+@lightBlue:lighten(#0D7DC1, 50%);
+@grey:#CCC;
+
 
 
 body{
@@ -22,4 +25,93 @@ body{
 a, a:link, a:visited{
   color:@linkColor;
   text-decoration:underline;
+}
+
+header[role=banner]{
+  padding:1.25em;
+}
+.page{
+  padding:1.25em;
+}
+
+
+.view-usergroup-members{
+  .user{
+    float:left;
+    padding:1.25em;
+  }
+}
+
+h2{
+  &.headline{
+    font-size:@fontsize-L;
+
+    &.post{
+      font-style:italic;
+    }
+  }
+
+
+}
+
+.dug-events{
+
+  .row{
+    &.event{
+    }
+  }
+
+}
+
+
+div.banner{
+  padding:1.25em;
+  background:@lightBlue;
+  border:solid 2px @grey;
+}
+
+
+
+/* Flags */
+
+.flag-iamgoing{
+  a.flag{
+    display:inline-block;
+    //padding:5px 0;
+    width:7.5em;
+    height:1.875em;
+    line-height: 1.875em;
+    text-align: center;
+    //border:solid 1px @grey;
+
+    &.flag-action{
+      background:green;
+      color:#FFF;
+    }
+
+    &.unflag-action{
+      background:red;
+      color:#FFF;
+    }
+  }
+
+}
+
+
+/* Attendees */
+
+.attendees{
+  .row{
+    display:inline-block;
+    float:left;
+    margin:0 0.625em 0.625em 0;
+
+    &.attendee{
+
+      border:solid 1px #DDD;
+      width:40px;
+      height:40px;
+    }
+
+  }
 }

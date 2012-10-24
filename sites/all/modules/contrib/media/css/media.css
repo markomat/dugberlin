@@ -81,6 +81,14 @@
   position: relative;
 }
 
+/* Library form */
+
+#media-tab-library #scrollbox {
+  height: 300px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
 /* Format form */
 
 #media-format-form {

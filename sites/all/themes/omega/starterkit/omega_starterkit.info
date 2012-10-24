@@ -1,0 +1,14 @@
+name = Default Omega Starterkit
+description = Default Omega Starterkit for the Omega base theme.
+screenshot = screenshot.png
+engine = phptemplate
+core = 7.x
+base theme = omega
+starterkit = TRUE
+hidden = TRUE
+; Information added by drupal.org packaging script on 2012-09-13
+version = "7.x-4.0-alpha1+27-dev"
+core = "7.x"
+project = "omega"
+datestamp = "1347497889"
+

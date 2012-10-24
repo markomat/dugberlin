@@ -14,7 +14,7 @@ class dsFormTests extends dsBaseTest {
     return array(
       'name' => t('Forms'),
       'description' => t('Tests for managing layouts on forms.'),
-      'group' => t('Display suite'),
+      'group' => t('Display Suite'),
     );
   }
 
@@ -36,7 +36,7 @@ class dsFormTests extends dsBaseTest {
 
     // Configure teaser layout.
     $form = array(
-      'additional_settings[layout]' => 'ds_form',
+      'additional_settings[layout]' => 'ds_2col_stacked',
     );
     $form_assert = array(
       'regions' => array(
@@ -61,7 +61,7 @@ class dsFormTests extends dsBaseTest {
 
     // Inspect the node.
     $this->drupalGet('node/' . $node->nid . '/edit');
-    $this->assertRaw('ds-form"', 'ds-form class added');
+    $this->assertRaw('ds_2col_stacked', 'ds-form class added');
     $this->assertRaw('group-header', 'Template found (region header)');
     $this->assertRaw('group-left', 'Template found (region left)');
     $this->assertRaw('group-right', 'Template found (region right)');
@@ -87,7 +87,7 @@ class dsFormTests extends dsBaseTest {
 
     // Test on a non entity form - view modes form is registered in ds_test.
     $form = array(
-      'additional_settings[layout]' => 'ds_form',
+      'additional_settings[layout]' => 'ds_2col_stacked',
     );
     $form_assert = array(
       'regions' => array(
@@ -100,16 +100,16 @@ class dsFormTests extends dsBaseTest {
     $this->dsSelectLayout($form, $form_assert, 'admin/structure/rel/manage/ds_edit_view_mode_form');
 
     $fields = array(
-      'fields[name][region]' => 'left',
+      'fields[name][region]' => 'header',
       'fields[view_mode][region]' => 'left',
       'fields[entities][region]' => 'right',
-      'fields[submit][region]' => 'right',
+      'fields[submit][region]' => 'footer',
     );
     $this->dsConfigureUI($fields, 'admin/structure/rel/manage/ds_edit_view_mode_form');
 
     // Inspect the view mode form.
     $this->drupalGet('admin/structure/ds/view_modes/manage');
-    $this->assertRaw('ds-form"', 'ds-form class added');
+    $this->assertRaw('ds_2col_stacked', 'ds-form class added');
     $this->assertRaw('group-header', 'Template found (region header)');
     $this->assertRaw('group-left', 'Template found (region left)');
     $this->assertRaw('group-right', 'Template found (region right)');
@@ -132,7 +132,7 @@ class dsFormTests extends dsBaseTest {
     $this->drupalPost('rel-register/nojs/ds_edit_custom_field_form', $edit, t('Save'), array('query' => array('destination' => 'admin/structure/ds/fields/manage_custom')));
 
     $form = array(
-      'additional_settings[layout]' => 'ds_form',
+      'additional_settings[layout]' => 'ds_2col_stacked',
     );
     $form_assert = array(
       'regions' => array(
@@ -145,18 +145,18 @@ class dsFormTests extends dsBaseTest {
     $this->dsSelectLayout($form, $form_assert, 'admin/structure/rel/manage/ds_edit_custom_field_form');
 
     $fields = array(
-      'fields[name][region]' => 'left',
+      'fields[name][region]' => 'header',
       'fields[field][region]' => 'left',
       'fields[submit][region]' => 'right',
       'fields[code][region]' => 'right',
       'fields[use_token][region]' => 'right',
-      'fields[entities][region]' => 'right',
+      'fields[entities][region]' => 'footer',
     );
     $this->dsConfigureUI($fields, 'admin/structure/rel/manage/ds_edit_custom_field_form');
 
     // Inspect the code field form.
     $this->drupalGet('admin/structure/ds/fields/manage_custom');
-    $this->assertRaw('ds-form"', 'ds-form class added');
+    $this->assertRaw('ds_2col_stacked', 'ds-form class added');
     $this->assertRaw('group-header', 'Template found (region header)');
     $this->assertRaw('group-left', 'Template found (region left)');
     $this->assertRaw('group-right', 'Template found (region right)');
