@@ -1,5 +1,0 @@
-name = BeansTag
-description = Customize page title, meta description and meta tags according to url/path alias
-package = Beansbox
-version = 7.x-1.0-beta1
-core = 7.x
