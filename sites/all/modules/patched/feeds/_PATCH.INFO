@@ -1,0 +1,4 @@
+21.06.2014 - katja
+------------------
+Patch zum Import von encrypted md5 Passwörtern aus der alten DB
+https://www.drupal.org/node/1611554 / - patch #13
