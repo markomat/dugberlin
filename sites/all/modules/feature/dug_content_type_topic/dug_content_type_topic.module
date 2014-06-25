@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the DUG Inhaltstyp Thema feature.
+ */
+
+include_once 'dug_content_type_topic.features.inc';
